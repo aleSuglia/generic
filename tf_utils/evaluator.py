@@ -1,5 +1,5 @@
 from tqdm import tqdm
-from numpy import float32
+from numpy import float32, np
 import copy
 import os
 import itertools
@@ -39,7 +39,7 @@ class Evaluator(object):
         self.tokenizer = tokenizer
 
 
-    def process(self, sess, iterator, outputs, listener=None):
+    def process(self, sess, iterator, outputs, listener=None, output_dialogue_states=False):
 
         assert isinstance(outputs, list), "outputs must be a list"
 
@@ -55,13 +55,20 @@ class Evaluator(object):
 
         n_iter = 1.
         aggregated_outputs = [0.0 for v in outputs if is_scalar(v) and v in original_outputs]
-
+        dialogue_state_features = []
+        dialogue_state_ids = []
         for batch in tqdm(iterator):
             # Appending is_training flag to the feed_dict
             batch["is_training"] = is_training
 
             # evaluate the network on the batch
             results = self.execute(sess, outputs, batch)
+
+            if output_dialogue_states:
+                # batch["raw"] contains the raw JSON formatted game information
+                dialogue_state_ids.extend(game["id"] for game in batch["raw"])
+                dialogue_state_features.append(results[0])
+
             # process the results
             i = 0
             for var, result in zip(outputs, results):
@@ -80,7 +87,12 @@ class Evaluator(object):
         if listener is not None:
             listener.after_epoch(is_training)
 
-        return aggregated_outputs
+        if not output_dialogue_states:
+            return aggregated_outputs
+
+        dialogue_state_features = np.stack(dialogue_state_features)
+
+        return  aggregated_outputs, (dialogue_state_features, dialogue_state_ids)
 
     def execute(self, sess, output, batch):
         feed_dict = {self.scope + key + ":0": value for key, value in batch.items() if key in self.provided_sources}
