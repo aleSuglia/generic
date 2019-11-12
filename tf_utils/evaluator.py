@@ -1,5 +1,5 @@
 from tqdm import tqdm
-from numpy import float32, np
+import numpy as np
 import copy
 import os
 import itertools
@@ -66,7 +66,7 @@ class Evaluator(object):
 
             if output_dialogue_states:
                 # batch["raw"] contains the raw JSON formatted game information
-                dialogue_state_ids.extend(game["id"] for game in batch["raw"])
+                dialogue_state_ids.extend(game.dialogue_id for game in batch["raw"])
                 dialogue_state_features.append(results[0])
 
             # process the results
@@ -90,7 +90,7 @@ class Evaluator(object):
         if not output_dialogue_states:
             return aggregated_outputs
 
-        dialogue_state_features = np.stack(dialogue_state_features)
+        dialogue_state_features = np.concatenate(dialogue_state_features, axis=0)
 
         return  aggregated_outputs, (dialogue_state_features, dialogue_state_ids)
 
