@@ -1,15 +1,20 @@
-import shutil
 import hashlib
 import json
 import os
+import shutil
 
-from  generic.utils.logger import create_logger
+from generic.utils.logger import create_logger
 
-def load_config(config_file, exp_dir):
+
+def load_config(config_file, exp_dir, ext_exp_identifier=None):
     with open(config_file, 'rb') as f_config:
         config_str = f_config.read()
         exp_identifier = hashlib.md5(config_str).hexdigest()
         config = json.loads(config_str.decode('utf-8'))
+
+    if ext_exp_identifier is not None:
+        print("Overriding experiment identifier")
+        exp_identifier = ext_exp_identifier
 
     save_path = '{}/{{}}'.format(os.path.join(exp_dir, exp_identifier))
     if not os.path.isdir(save_path.format('')):
@@ -27,6 +32,7 @@ def load_config(config_file, exp_dir):
     shutil.copy(config_file, save_path.format('config.json'))
 
     return config, exp_identifier, save_path
+
 
 def get_config_from_xp(exp_dir, identifier):
     config_path = os.path.join(exp_dir, identifier, 'config.json')
