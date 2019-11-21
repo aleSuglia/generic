@@ -66,7 +66,7 @@ class Evaluator(object):
 
             if output_dialogue_states:
                 # batch["raw"] contains the raw JSON formatted game information
-                dialogue_state_ids.extend(game.dialogue_id for game in batch["raw"])
+                dialogue_state_ids.extend(str(game.dialogue_id) for game in batch["raw"])
                 dialogue_state_features.append(results[0])
 
             # process the results
