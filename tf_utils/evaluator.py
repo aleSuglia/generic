@@ -67,7 +67,7 @@ class Evaluator(object):
             if output_dialogue_states:
                 # batch["raw"] contains the raw JSON formatted game information
                 dialogue_state_ids.extend(str(game.dialogue_id) for game in batch["raw"])
-                dialogue_state_features.append(results[0])
+                dialogue_state_features.extend(results[0].h)
 
             # process the results
             i = 0
@@ -90,7 +90,7 @@ class Evaluator(object):
         if not output_dialogue_states:
             return aggregated_outputs
 
-        dialogue_state_features = np.concatenate(dialogue_state_features, axis=0)
+        dialogue_state_features = np.stack(dialogue_state_features)
 
         return  aggregated_outputs, (dialogue_state_features, dialogue_state_ids)
 
