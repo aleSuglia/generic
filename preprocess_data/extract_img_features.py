@@ -67,6 +67,9 @@ def extract_features(
             #  CREATE FEATURES
             ############################
             print("Start computing image features...")
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
+
             if one_set == "all":
                 filepath = os.path.join(out_dir, "features.h5")
             else:
